@@ -87,7 +87,9 @@ public class NewsActivity extends Activity {
 		        	// Fetch news content from GAE or cnBeta.com
 		        	content = DAO.fetchNewsContent(id);
 		        	if(content != null)
-		        		webView.loadDataWithBaseURL(NewsListActivity.URL_CNBETA, content, "text/html", NewsListActivity.ENCODING_DEFAULT, null);
+		        		webView.post(new Runnable(){public void run(){
+		        			webView.loadDataWithBaseURL(NewsListActivity.URL_CNBETA, content, "text/html", NewsListActivity.ENCODING_DEFAULT, null);
+		        		}});
 		        	else
 		        		webView.post(new Runnable(){public void run(){
 		        			Toast.makeText(getApplicationContext(), "网络失败！", Toast.LENGTH_LONG).show();

@@ -20,7 +20,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -83,7 +82,6 @@ public class NewsListActivity extends Activity {
         // Restore if previous state exists
         if(savedInstanceState != null && savedInstanceState.containsKey("rawNewsList")) {
         	rawNewsList = savedInstanceState.getString("rawNewsList");
-        	Log.d("gg", "onCreate: " + rawNewsList);
         	updateListView();
     		return;
         }
@@ -98,7 +96,6 @@ public class NewsListActivity extends Activity {
     
     public void onSaveInstanceState (Bundle outState) {
     	if(rawNewsList != null) {
-    		Log.d("gg", "onSaveInstanceState: " + rawNewsList);
     		outState.putString("rawNewsList", rawNewsList);
     	}
     }
