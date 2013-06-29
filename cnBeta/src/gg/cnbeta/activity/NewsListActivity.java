@@ -42,7 +42,7 @@ public class NewsListActivity extends Activity {
 	public static final String URL_GAE_NEWS_CONTENT = URL_APPSPOT + "/feed?id=";
 	public static final String ENCODING_DEFAULT = "UTF-8";
 	public static final String URL_CNBETA = "http://cnbeta.com";
-	public static final String URL_CNBETA_IMAGE = "http://img.cnbeta.com/topics/";
+	public static final String URL_CNBETA_IMAGE = "http://static.cnbetacdn.com/topics/";
 	
 	private ActionBar actionBar;
 	

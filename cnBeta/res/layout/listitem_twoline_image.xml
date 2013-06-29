@@ -21,7 +21,7 @@
 	         android:layout_width="fill_parent"
 	         android:layout_height="wrap_content"
 	         android:lines="1"
-	         android:textColor="#3090C7"/>
+	         android:textColor="#0099CC"/>
 	
 	     <TextView android:id="@+id/text2"
 	         android:textSize="10sp"

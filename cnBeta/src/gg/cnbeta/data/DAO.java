@@ -161,7 +161,7 @@ public class DAO {
 			sb.append("<meta name=\"HandheldFriendly\" content=\"true\" /><meta name=\"viewport\" content=\"width=device-width, height=device-height, user-scalable=no\" />");
 			sb.append("</head>");
 			sb.append("<body style=\"background:#fff;color:#595454;\">");
-			title.attr("style", "color:#3090C7;font-size:120%;");
+			title.attr("style", "color:#0099CC;font-size:120%;");
 			sb.append(title.outerHtml());
 			date.attr("style", "font-size:80%");
 			sb.append(date.outerHtml());
