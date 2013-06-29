@@ -91,13 +91,14 @@ public class NewsListActivity extends Activity {
 		rawNewsList = DAO.loadRawNewsList(getApplicationContext());
 		updateListView();
 		
-		// Do a quick update
+		// Do a quick update from network
 		updateNewsList();
     }
     
     public void onSaveInstanceState (Bundle outState) {
-    	if(rawNewsList != null)
+    	if(rawNewsList != null) {
     		outState.putString("rawNewsList", rawNewsList);
+    	}
     }
     
     private void updateNewsList() {
