@@ -23,8 +23,8 @@ Feed/war/WEB-INF/classes/
 Feed/war/WEB-INF/appengine-generated/
 
 # Android generated files
-cnBeta/bin/
-cnBeta/gen/
+*/bin/
+*/gen/
 
 # Eclipse workspace files
 .metadata/
