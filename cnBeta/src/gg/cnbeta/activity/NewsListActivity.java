@@ -75,6 +75,7 @@ public class NewsListActivity extends Activity {
 				//Toast.makeText(getApplicationContext(), ""+list.get(position).getId(), Toast.LENGTH_SHORT).show();
 				Intent intent = new Intent(NewsListActivity.this, NewsActivity.class);
 				intent.putExtra("id", list.get(position).getId());
+				//DAO.markRead(NewsListActivity.this.getApplicationContext(), list.get(position).getId());
 				startActivity(intent);
 			}   	
         });
@@ -157,8 +158,9 @@ public class NewsListActivity extends Activity {
     	List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
     	for(News news : list) {
     		Map<String, Object> map = new HashMap<String, Object>();
-    		map.put("title", news.getTitle());
-    		map.put("brief", news.getTime()+" "+news.getBrief());
+    		int readbit = DAO.checkRead(this.getApplicationContext(), news.getId()) ? 1 : 0;
+    		map.put("title", readbit+news.getTitle());
+    		map.put("brief", readbit+news.getTime()+" "+news.getBrief());
     		map.put("image_uri", news.getPicId());
     		ret.add(map);
     	}
@@ -197,10 +199,29 @@ public class NewsListActivity extends Activity {
     				t.start();
 				}
  				return true;
+ 			} 
+ 			/*else if (view.getId() == R.id.text1) {
+ 				final TextView tv = (TextView) view;
+ 				final String s = (String) data;
+ 				tv.setText(s.substring(1));
+ 				if (s.startsWith("1")) {
+ 					tv.setTextColor(NewsListActivity.this.getResources().getColor(R.color.listitem_title_read));
+ 				}
+ 				return true;
+ 			} else if (view.getId() == R.id.text2) {
+ 				final TextView tv = (TextView) view;
+ 				final String s = (String) data;
+ 				tv.setText(s.substring(1));
+ 				if (s.startsWith("1")) {
+ 				    tv.setTextColor(NewsListActivity.this.getResources().getColor(R.color.listitem_brief_read));
+ 				}
+ 				return true;
  			}
+ 			*/
  			return false;
  		}	
     }
+    
     /*
     // Create an intent for starting itself
     public static Intent createIntent(Context context) {

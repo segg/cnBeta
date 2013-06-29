@@ -21,14 +21,14 @@
 	         android:layout_width="fill_parent"
 	         android:layout_height="wrap_content"
 	         android:lines="1"
-	         android:textColor="#0099CC"/>
+	         android:textColor="@color/listitem_title"/>
 	
 	     <TextView android:id="@+id/text2"
 	         android:textSize="10sp"
 	         android:layout_width="fill_parent"
 	         android:layout_height="wrap_content"
 	         android:lines="3"
-	         android:textColor="#595454"
+	         android:textColor="@color/listitem_brief"
 	         />
      </LinearLayout>
     

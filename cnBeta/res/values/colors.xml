@@ -5,4 +5,9 @@
     <color name="actionbar_background_end">#33B5E5</color>
     <color name="actionbar_background_item_pressed_start">#5CB3FF</color>
     <color name="actionbar_background_item_pressed_end">#56A5EC</color>
+    
+    <color name="listitem_title">#0099CC</color>
+     <color name="listitem_brief">#595454</color>
+    <color name="listitem_title_read">#6DCAEC</color>
+    <color name="listitem_brief_read">#CCCCCC</color>
 </resources> 
