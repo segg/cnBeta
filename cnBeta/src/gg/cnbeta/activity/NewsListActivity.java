@@ -16,13 +16,11 @@ import java.util.List;
 import java.util.Map;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -38,7 +36,9 @@ import com.markupartist.android.widget.ActionBar.AbstractAction;
 public class NewsListActivity extends Activity {
 	
 	public static final String URL_APPSPOT = "http://gg--uu.appspot.com";
-	public static final String URL_GAE_NEWS_LIST = URL_APPSPOT + "/feed?hash=";
+	public static final String URL_PROXY = "http://kaituan.org/cgi-bin/nph-x.cgi/w0/http/gg--uu.appspot.com";
+	public static final String URL_GAE_NEWS_LIST = URL_APPSPOT + "/feed?firstArticleId=";
+	public static final String URL_PROXY_NEWS_LIST = URL_PROXY + "/feed?firstArticleId=";
 	public static final String URL_GAE_NEWS_CONTENT = URL_APPSPOT + "/feed?id=";
 	public static final String ENCODING_DEFAULT = "UTF-8";
 	public static final String URL_CNBETA = "http://cnbeta.com";
@@ -84,25 +84,21 @@ public class NewsListActivity extends Activity {
         if(savedInstanceState != null && savedInstanceState.containsKey("rawNewsList")) {
         	rawNewsList = savedInstanceState.getString("rawNewsList");
         	updateListView();
+    		return;
         }
-        else
-        {
-	        // try to load from local cache if exist
-			rawNewsList = DAO.loadRawNewsList(getApplicationContext());
-			updateListView();
-			
-			// Do a quick update
-			updateNewsList();
-        }
+ 
+        // try to load from local cache if exist
+		rawNewsList = DAO.loadRawNewsList(getApplicationContext());
+		updateListView();
+		
+		// Do a quick update
+		updateNewsList();
     }
     
-    @Override
     public void onSaveInstanceState (Bundle outState) {
     	if(rawNewsList != null)
     		outState.putString("rawNewsList", rawNewsList);
-    	super.onSaveInstanceState(outState);
     }
-    
     
     private void updateNewsList() {
     	//final  ProgressDialog dialog = ProgressDialog.show(NewsListActivity.this, "资讯列表", 
@@ -111,25 +107,24 @@ public class NewsListActivity extends Activity {
     	Thread t = new Thread() {
         	public void run() {			
         		// Try to fetch the latest news list and update local cache
-        		String tmp = DAO.fetchRawNewsList(getApplicationContext());        		
-        		if(tmp == null){	// Update failure due to network problem		
+        		rawNewsList = DAO.fetchRawNewsList(getApplicationContext());        		
+        		if(rawNewsList == null){	// Update failure due to network problem		
         			listView.post(new Runnable() {
     		        	public void run(){
     		        		Toast.makeText(getApplicationContext(), "网络失败！", Toast.LENGTH_LONG).show();
     		        	}
     		        });
         		}
-        		else if(tmp.length() > 0) {	// There is update, update the list view
-        			rawNewsList = tmp;
+        		else if(rawNewsList.length() > 0)	// There is update, update the list view
         			updateListView();
-        		}
         		
         		listView.post(new Runnable() {
 			        	public void run() {
 			        		//dialog.cancel();
 			        		actionBar.setProgressBarVisibility(View.GONE);
 			        	}
-			       });	
+			       });
+        		
         	}        
         };
         t.start();
@@ -177,7 +172,7 @@ public class NewsListActivity extends Activity {
  			if( (view instanceof ImageView) & (data instanceof String) ) {
  				final ImageView iv = (ImageView) view;
  				final String picId = (String)data;   				
- 				Bitmap bm = DAO.loadPic(getApplicationContext(), picId);	//load from local cache
+ 				Bitmap bm = DAO.loadPic(getApplicationContext(), picId);	//load from local storage
 				if(bm != null)					
 					iv.setImageBitmap(bm);
 				else {

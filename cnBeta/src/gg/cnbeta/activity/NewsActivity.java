@@ -5,11 +5,8 @@ import com.markupartist.android.widget.ActionBar.AbstractAction;
 import com.markupartist.android.widget.ActionBar.IntentAction;
 
 import gg.cnbeta.data.DAO;
-import gg.cnbeta.data.NetworkUtil;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.Toast;
@@ -55,11 +52,9 @@ public class NewsActivity extends Activity {
     }
     
     // Save state
-    @Override
     public void onSaveInstanceState (Bundle outState) {
     	if(content != null)
     		outState.putString("content", content);
-    	super.onSaveInstanceState(outState);
     }
     
     private void updateNews() {

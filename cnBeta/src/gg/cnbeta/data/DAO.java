@@ -11,20 +11,14 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 
 public class DAO {
 	
@@ -75,10 +69,13 @@ public class DAO {
 	// Then try cnbeta.com
 	public static String fetchRawNewsList(Context context)
 	{	
-		String hash = md5(loadRawNewsList(context));
-		String newsList = fetchRawNewsListFromGAE(hash);
+		String firstArticleId = null;
+		File f = new File(context.getCacheDir(), FILENAME_NEWS_LIST);
+		if(f.exists())
+			 firstArticleId = getFirstArticleId(f);
+		String newsList = fetchRawNewsListFromUrl(NewsListActivity.URL_GAE_NEWS_LIST, firstArticleId);
 		if(newsList == null)
-			newsList = fetchRawNewsListFromCnbeta();
+			newsList = fetchRawNewsListFromUrl(NewsListActivity.URL_PROXY_NEWS_LIST, firstArticleId);
 		// update local cache
 		if(newsList != null && newsList.length() > 0)
 			storeNewsList(context, newsList);	
@@ -86,43 +83,38 @@ public class DAO {
 		
 	}
 	
-	// Check with GAE server using the md5 hash of the local stored newslist
+	// Check with server using firstArticleId
 	// Return news list if any update
 	// Return "" if no change
 	// Return null if any network problem
-	public static String fetchRawNewsListFromGAE(String hash)
+	private static String fetchRawNewsListFromUrl(String url, String firstArticleId)
 	{
 		String html = null;
-		html = NetworkUtil.fetchHtml(NewsListActivity.URL_GAE_NEWS_LIST + hash, null);		
+		html = NetworkUtil.fetchHtml(url + firstArticleId, null);		
 		if(html == null)
 			return null;	// Network problem
-		if(html.equals(hash))
+		if(html.equals(firstArticleId))
 			return "";	
 		return html;
 	}
 	
-	public static String fetchRawNewsListFromCnbeta() {
-		String html = NetworkUtil.fetchHtml(NewsListActivity.URL_CNBETA, "GB2312");
-		if(html == null) return null;
-		StringBuffer sb = new StringBuffer();
-		Document doc = Jsoup.parse(html );
-		Elements newsList = doc.getElementsByClass("newslist");		
-		for(Element e : newsList) {	
-			Element a = e.getElementsByClass("topic").first().child(0);
-			String id = a.attr("href").replaceAll(".*/", "").replace(".htm", "");
-			String title = a.child(0).html();
-			String tokens[] = e.getElementsByClass("author").first().child(0).html().split(" ");
-			String author = tokens[0].replace("发布于", "");
-			String time = tokens[1]+" "+tokens[2];
-			a = e.getElementsByClass("desc").first().child(0);
-			String topicId = a.attr("href").replaceAll(".*/", "").replace(".htm", "");
-			String pic = a.child(0).attr("src").replaceAll(".*/", "");
-			String brief = a.siblingElements().get(1).html().replaceAll("<.*?>", "");
-			News news = new News(id, time, author, title, brief, topicId, pic);
-			sb.append(news.toString());
-			sb.append("<<>>");
+	// Use first article id to check with GAE if any change to news list
+	private static String getFirstArticleId(File f)
+	{
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(f));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
-		return convertHtmlToText(sb.toString());
+		char [] buf = new char[20];
+		try {
+			br.read(buf);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		String s = new String(buf);
+		return s.split("<>")[0];
 	}
 	
 	// First try GAE
@@ -134,49 +126,54 @@ public class DAO {
 			content = fetchNewsContentFromCnbeta(id);
 		return content;
 	}
-	public static String fetchNewsContentFromGAE(String id) {
+	private static String fetchNewsContentFromGAE(String id) {
 		String content = NetworkUtil.fetchHtml(NewsListActivity.URL_GAE_NEWS_CONTENT + id, null);
 		return content;
 	}
 	
 	/* Return null if the news with the id does not exist */
-	public static String fetchNewsContentFromCnbeta(String id) {
-		String html = NetworkUtil.fetchHtml(NewsListActivity.URL_CNBETA + "/articles/" + id +".htm", "GB2312");
+	private static String fetchNewsContentFromCnbeta(String id) {
+		String html = NetworkUtil.fetchHtml(NewsListActivity.URL_CNBETA + "/articles/" + id +".htm", null);
 		if(html == null) return null;
-		Document doc = Jsoup.parse(html);
-		Element content = doc.getElementById("news_content");
-		if(content == null)
+		try {
+			Document doc = Jsoup.parse(html);
+			Element title = doc.getElementById("news_title");
+
+			Element titleBar = doc.getElementsByClass("title_bar").get(0);
+			Element date = titleBar.getElementsByClass("date").get(0);
+
+			Element outterContent = doc.getElementsByClass("content").get(0);
+			Element intro = outterContent.getElementsByClass("introduction").get(0);
+			Element content = intro.nextElementSibling();
+
+			Element brief = intro.getElementsByTag("p").get(0);
+
+			// resize images
+			content.select("[style]").removeAttr("style");
+			content.select("[height]").removeAttr("height");
+			content.select("[width]").removeAttr("width");
+			content.select("img").attr("style", "width:100%;");
+			content.select("iframe").attr("style", "width:100%;");
+
+			StringBuffer sb = new StringBuffer();
+			sb.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\">");
+			sb.append("<head>");
+			sb.append("<meta name=\"HandheldFriendly\" content=\"true\" /><meta name=\"viewport\" content=\"width=device-width, height=device-height, user-scalable=no\" />");
+			sb.append("</head>");
+			sb.append("<body style=\"background:#fff;color:#595454;\">");
+			title.attr("style", "color:#3090C7;font-size:120%;");
+			sb.append(title.outerHtml());
+			date.attr("style", "font-size:80%");
+			sb.append(date.outerHtml());
+			sb.append(brief.outerHtml());
+			sb.append(content.outerHtml());
+			sb.append("</body>");
+			sb.append("</html>");
+			return convertHtmlToText(sb.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
 			return null;
-		// Remove useless content
-		content.getElementById("sign").remove();
-		content.getElementById("googleAd_afc").remove();
-		content.getElementsByClass("digbox").first().remove();
-		
-		// resize images
-		content.select("[style]").removeAttr("style");	
-		content.select("[height]").removeAttr("height");
-		content.select("[width]").removeAttr("width");
-		content.select("img").attr("style","width:100%;");
-		content.select("iframe").attr("style","width:100%;");
-		
-		// get title and author
-		Element title = doc.getElementById("news_title");
-		title.attr("style", "color:#3090C7;");
-		Element author = doc.getElementById("news_author");
-		StringBuffer sb = new StringBuffer();
-		sb.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\">");
-		sb.append("<head>");
-		sb.append("<meta name=\"HandheldFriendly\" content=\"true\" /><meta name=\"viewport\" content=\"width=device-width, height=device-height, user-scalable=no\" />");
-		sb.append("</head>");
-		sb.append("<body style=\"background:#fff;color:#595454;\">");
-		sb.append(title.outerHtml());
-		sb.append("<p style=\"font-size:80%\">");
-		sb.append(author.text().split("\\|")[0]);
-		sb.append("</p>");
-		sb.append(content.outerHtml());
-		sb.append("</body>");
-		sb.append("</html>");
-		return convertHtmlToText(sb.toString());
+		}
 	}
 	
 	public static Bitmap loadPic(Context context, String picId) {
@@ -203,32 +200,5 @@ public class DAO {
 		} catch (Exception e) {
 		       e.printStackTrace();
 		}
-	}
-	
-	public static String md5(String input)
-	{
-		if(input == null)
-			return null;
-		byte[] bytesOfMessage = null;
-		try {
-			bytesOfMessage = input.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			return null;
-		}
-		MessageDigest md = null;
-		try {
-			md = MessageDigest.getInstance("MD5");
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-			return null;
-		}
-		byte[] digest = md.digest(bytesOfMessage);
-		BigInteger bigInt = new BigInteger(1,digest);
-		String hashtext = bigInt.toString(16);
-		// zero pad to get full 32 chars
-		while(hashtext.length() < 32 )
-		  hashtext = "0"+hashtext;
-		return hashtext;
 	}
 }

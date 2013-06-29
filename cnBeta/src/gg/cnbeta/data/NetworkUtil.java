@@ -6,12 +6,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import android.util.Log;
 
@@ -34,6 +30,5 @@ public class NetworkUtil {
 		}
 		return sb.toString();
 	}
-
 	
 }
