@@ -2,6 +2,9 @@ package gg.feed;
 
 import javax.persistence.Id;
 
+import com.googlecode.objectify.annotation.Cached;
+
+@Cached
 public class News
 {
 	public static final String DELIMITER = "<>";
@@ -17,13 +20,14 @@ public class News
 	
 	public News(){}
 	
-	public News(String id, String time, String author, String title, String brief, String topicId, String picId)
+	public News(String id, String time, String author, String title, String brief, String content, String topicId, String picId)
 	{
 		setId(id);
 		setTime(time);
 		setAuthor(author);
 		setTitle(title);
 		setBrief(brief);
+		setContent(content);
 		setTopicId(topicId);
 		setPicId(picId);
 	}

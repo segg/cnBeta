@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cronentries>
   <cron>
-    <url>/feed?hash=0</url>
-    <description>Fetch news list every 1 minute</description>
+    <url>/feed?crawl=0</url>
+    <description>Crawl news every 1 minutes</description>
     <schedule>every 1 minutes</schedule>
   </cron>
   <!--  
