@@ -177,7 +177,7 @@ public class DAO {
 	}
 	
 	public static Bitmap loadPic(Context context, String picId) {
-		File f = new File(context.getCacheDir(), DIR_TOPICS + "/" + picId);
+		File f = new File(context.getFilesDir(), DIR_TOPICS + "/" + picId);
 		Bitmap bm = null;
 		if(f.exists()) {
 			try {
@@ -190,10 +190,10 @@ public class DAO {
 	}
 	
 	public static void storePic(Context context, String picId, Bitmap bm) {
-		File dir = new File(context.getCacheDir(), DIR_TOPICS);
+		File dir = new File(context.getFilesDir(), DIR_TOPICS);
 		if(!dir.exists())
 			dir.mkdirs();
-		File f = new File(context.getCacheDir(), DIR_TOPICS + "/" + picId);
+		File f = new File(context.getFilesDir(), DIR_TOPICS + "/" + picId);
 		try {
 		       FileOutputStream out = new FileOutputStream(f);
 		       bm.compress(Bitmap.CompressFormat.PNG, 90, out);
