@@ -157,8 +157,8 @@ public class DAO {
       sb.append("</html>");
       String description = brief.text() + " " + content.text();
       description = description.substring(0, Math.min(400, description.length()));
-      News news = new News(id, date.text(), "no author", title.text(),
-          description, sb.toString(), "no topic id", picId);
+      News news = new News(id, date.text(), "", title.text(),
+          description, sb.toString(), "", picId);
       Objectify ofy = ObjectifyService.begin();
       ofy.put(news);
       return news;
