@@ -69,7 +69,7 @@ public class DAO {
 	// Then try cnbeta.com
 	public static String fetchRawNewsList(Context context)
 	{	
-		String firstArticleId = null;
+		String firstArticleId = "";
 		File f = new File(context.getCacheDir(), FILENAME_NEWS_LIST);
 		if(f.exists())
 			 firstArticleId = getFirstArticleId(f);

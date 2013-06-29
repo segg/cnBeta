@@ -16,11 +16,11 @@ import java.util.List;
 import java.util.Map;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -83,6 +83,7 @@ public class NewsListActivity extends Activity {
         // Restore if previous state exists
         if(savedInstanceState != null && savedInstanceState.containsKey("rawNewsList")) {
         	rawNewsList = savedInstanceState.getString("rawNewsList");
+        	Log.d("gg", "onCreate: " + rawNewsList);
         	updateListView();
     		return;
         }
@@ -97,6 +98,7 @@ public class NewsListActivity extends Activity {
     
     public void onSaveInstanceState (Bundle outState) {
     	if(rawNewsList != null) {
+    		Log.d("gg", "onSaveInstanceState: " + rawNewsList);
     		outState.putString("rawNewsList", rawNewsList);
     	}
     }
@@ -108,15 +110,16 @@ public class NewsListActivity extends Activity {
     	Thread t = new Thread() {
         	public void run() {			
         		// Try to fetch the latest news list and update local cache
-        		rawNewsList = DAO.fetchRawNewsList(getApplicationContext());        		
-        		if(rawNewsList == null){	// Update failure due to network problem		
+        		String tmpRawNewsList = DAO.fetchRawNewsList(getApplicationContext());        		
+        		if(tmpRawNewsList == null){	// Update failure due to network problem		
         			listView.post(new Runnable() {
     		        	public void run(){
     		        		Toast.makeText(getApplicationContext(), "网络失败！", Toast.LENGTH_LONG).show();
     		        	}
     		        });
         		}
-        		else if(rawNewsList.length() > 0)	// There is update, update the list view
+        		else if(tmpRawNewsList.length() > 0)	// There is update, update the list view
+        			rawNewsList = tmpRawNewsList;
         			updateListView();
         		
         		listView.post(new Runnable() {
@@ -201,11 +204,12 @@ public class NewsListActivity extends Activity {
  			return false;
  		}	
     }
-    
+    /*
     // Create an intent for starting itself
     public static Intent createIntent(Context context) {
         Intent i = new Intent(context, NewsListActivity.class);
         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         return i;
     }
+    */
 }
