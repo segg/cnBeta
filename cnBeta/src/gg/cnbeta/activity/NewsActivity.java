@@ -26,8 +26,8 @@ public class NewsActivity extends Activity {
        
         /* ActionBar*/
         actionBar.setTitle("cnBeta - 资讯内容");
-        actionBar.setHomeAction(new IntentAction(this, NewsListActivity.createIntent(this), R.drawable.ic_title_home_default));
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setHomeAction(new IntentAction(this, NewsListActivity.createIntent(this), R.drawable.ic_title_back));
+        actionBar.setDisplayHomeAsUpEnabled(false);
         actionBar.addAction(new AbstractAction(R.drawable.ic_title_refresh) {
             @Override
             public void performAction(View view) {
