@@ -205,7 +205,7 @@ public class DAO {
 		       e.printStackTrace();
 		}
 	}
-	
+	/*
 	private static Set<String> reads;
 	private static void initReads(Context context) {
 		reads = new HashSet<String>();
@@ -255,4 +255,5 @@ public class DAO {
 		reads.add(id);
 		saveReads(context);
 	}
+	*/
 }

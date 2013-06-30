@@ -158,9 +158,8 @@ public class NewsListActivity extends Activity {
     	List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
     	for(News news : list) {
     		Map<String, Object> map = new HashMap<String, Object>();
-    		int readbit = DAO.checkRead(this.getApplicationContext(), news.getId()) ? 1 : 0;
-    		map.put("title", readbit+news.getTitle());
-    		map.put("brief", readbit+news.getTime()+" "+news.getBrief());
+    		map.put("title", news.getTitle());
+    		map.put("brief", news.getTime()+" "+news.getBrief());
     		map.put("image_uri", news.getPicId());
     		ret.add(map);
     	}
