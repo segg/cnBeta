@@ -70,13 +70,17 @@ public class DAO {
   public static void updateNewsList() {
     log.info("update news list");
     Objectify ofy = ObjectifyService.begin();
-    Query<News> newss = ofy.query(News.class).order("-time").limit(50);
+    Query<News> newss = ofy.query(News.class).order("-time").limit(60);
     StringBuffer sb = new StringBuffer();
+    String firstArticleId = "0";
     for (News news : newss) {
+      if (firstArticleId.equals("0")) {
+        firstArticleId = news.getId();
+      }
       sb.append(news.toString());
       sb.append("<<>>");
     } 
-    NewsList nl = new NewsList(NEWS_LIST_ID, newss.get().getId(), sb.toString());
+    NewsList nl = new NewsList(NEWS_LIST_ID, firstArticleId, sb.toString());
     ofy.put(nl);
   }
   
@@ -90,20 +94,24 @@ public class DAO {
 
       Elements links = realtimeList.getElementsByTag("a");
       Set<String> linkset = new HashSet<String>();
-      boolean has_new = false;
+      boolean need_update_newslist = false;
+      String firstArticleId = getNewsList().firstArticleId;
+      Objectify ofy = ObjectifyService.begin();
       for (Element e : links) {
         String id = e.attr("href").replaceAll(".*/", "").replace(".htm", "");
         if (!id.isEmpty() && !linkset.contains(id)) {
           linkset.add(id);
-          Objectify ofy = ObjectifyService.begin();
+          if (id.compareTo(firstArticleId) > 0) {
+            need_update_newslist = true;
+          }
           if (ofy.find(News.class, id) == null) {
             if (fetchNews(id) != null) {
-              has_new = true;
+              need_update_newslist = true;
             }
           }
         }
       }
-      if (has_new) {
+      if (need_update_newslist) {
         updateNewsList();
       }
       return true;
