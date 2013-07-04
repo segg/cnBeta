@@ -1,14 +1,15 @@
 package gg.cnbeta.activity;
 
-import com.markupartist.android.widget.ActionBar;
-import com.markupartist.android.widget.ActionBar.Action;
-
+import gg.cnbeta.data.Const;
 import gg.cnbeta.data.DAO;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.Toast;
+
+import com.markupartist.android.widget.ActionBar;
+import com.markupartist.android.widget.ActionBar.Action;
 
 public class NewsActivity extends Activity {
 	
@@ -60,7 +61,7 @@ public class NewsActivity extends Activity {
         // Restore previous state
         if(savedInstanceState != null && savedInstanceState.containsKey("content")) {
         	content = savedInstanceState.getString("content");
-        	webView.loadDataWithBaseURL(NewsListActivity.URL_CNBETA, content, "text/html", NewsListActivity.ENCODING_DEFAULT, null);
+        	webView.loadDataWithBaseURL(Const.URL_CNBETA, content, "text/html", Const.ENCODING_DEFAULT, null);
         } else {
         	// do a fetch and update UI
         	updateNews();
@@ -88,7 +89,7 @@ public class NewsActivity extends Activity {
 		        	content = DAO.fetchNewsContent(id);
 		        	if(content != null)
 		        		webView.post(new Runnable(){public void run(){
-		        			webView.loadDataWithBaseURL(NewsListActivity.URL_CNBETA, content, "text/html", NewsListActivity.ENCODING_DEFAULT, null);
+		        			webView.loadDataWithBaseURL(Const.URL_CNBETA, content, "text/html", Const.ENCODING_DEFAULT, null);
 		        		}});
 		        	else
 		        		webView.post(new Runnable(){public void run(){

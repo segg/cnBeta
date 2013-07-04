@@ -13,7 +13,7 @@ public class NetworkUtil {
 	public static String fetchHtml(String url, String encode) {
 
 		if(encode == null)
-			encode = NewsListActivity.ENCODING_DEFAULT;
+			encode = Const.ENCODING_DEFAULT;
 		StringBuffer sb = new StringBuffer();
 		try {
 			URL u = new URL(url);

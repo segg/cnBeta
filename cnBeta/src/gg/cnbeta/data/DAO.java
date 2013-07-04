@@ -11,9 +11,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -27,7 +26,6 @@ public class DAO {
 	
 	public static final String FILENAME_NEWS_LIST = "newslist.txt";
 	public static final String FILENAME_READ = "read.txt";
-	public static final String DIR_TOPICS = "topics";
 
 	
 	public static String convertHtmlToText(String s) {
@@ -77,9 +75,9 @@ public class DAO {
 		File f = new File(context.getCacheDir(), FILENAME_NEWS_LIST);
 		if(f.exists())
 			 firstArticleId = getFirstArticleId(f);
-		String newsList = fetchRawNewsListFromUrl(NewsListActivity.URL_GAE_NEWS_LIST, firstArticleId);
+		String newsList = fetchRawNewsListFromUrl(Const.URL_GAE_NEWS_LIST, firstArticleId);
 		if(newsList == null)
-			newsList = fetchRawNewsListFromUrl(NewsListActivity.URL_PROXY_NEWS_LIST, firstArticleId);
+			newsList = fetchRawNewsListFromUrl(Const.URL_PROXY_NEWS_LIST, firstArticleId);
 		// update local cache
 		if(newsList != null && newsList.length() > 0)
 			storeNewsList(context, newsList);	
@@ -131,13 +129,13 @@ public class DAO {
 		return content;
 	}
 	private static String fetchNewsContentFromGAE(String id) {
-		String content = NetworkUtil.fetchHtml(NewsListActivity.URL_GAE_NEWS_CONTENT + id, null);
+		String content = NetworkUtil.fetchHtml(Const.URL_GAE_NEWS_CONTENT + id, null);
 		return content;
 	}
 	
 	/* Return null if the news with the id does not exist */
 	private static String fetchNewsContentFromCnbeta(String id) {
-		String html = NetworkUtil.fetchHtml(NewsListActivity.URL_CNBETA + "/articles/" + id +".htm", null);
+		String html = NetworkUtil.fetchHtml(Const.URL_CNBETA + "/articles/" + id +".htm", null);
 		if(html == null) return null;
 		try {
 			Document doc = Jsoup.parse(html);
@@ -180,31 +178,7 @@ public class DAO {
 		}
 	}
 	
-	public static Bitmap loadPic(Context context, String picId) {
-		File f = new File(context.getFilesDir(), DIR_TOPICS + "/" + picId);
-		Bitmap bm = null;
-		if(f.exists()) {
-			try {
-				bm = BitmapFactory.decodeStream(new FileInputStream(f));
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-		}
-		return bm;
-	}
 	
-	public static void storePic(Context context, String picId, Bitmap bm) {
-		File dir = new File(context.getFilesDir(), DIR_TOPICS);
-		if(!dir.exists())
-			dir.mkdirs();
-		File f = new File(context.getFilesDir(), DIR_TOPICS + "/" + picId);
-		try {
-		       FileOutputStream out = new FileOutputStream(f);
-		       bm.compress(Bitmap.CompressFormat.PNG, 90, out);
-		} catch (Exception e) {
-		       e.printStackTrace();
-		}
-	}
 	/*
 	private static Set<String> reads;
 	private static void initReads(Context context) {

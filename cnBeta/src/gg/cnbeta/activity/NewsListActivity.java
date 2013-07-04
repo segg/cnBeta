@@ -3,7 +3,9 @@
 
 package gg.cnbeta.activity;
 
+import gg.cnbeta.data.Const;
 import gg.cnbeta.data.DAO;
+import gg.cnbeta.data.ImageManager;
 import gg.cnbeta.data.News;
 import gg.cnbeta.data.NewsParser;
 
@@ -33,15 +35,6 @@ import com.markupartist.android.widget.ActionBar;
 import com.markupartist.android.widget.ActionBar.AbstractAction;
 
 public class NewsListActivity extends Activity {
-	
-	public static final String URL_APPSPOT = "http://gg--uu.appspot.com";
-	public static final String URL_PROXY = "http://50.87.186.28/cgi-bin/cnbeta_newslist.sh";
-	public static final String URL_GAE_NEWS_LIST = URL_APPSPOT + "/feed?firstArticleId=";
-	public static final String URL_PROXY_NEWS_LIST = URL_PROXY + "?";
-	public static final String URL_GAE_NEWS_CONTENT = URL_APPSPOT + "/feed?id=";
-	public static final String ENCODING_DEFAULT = "UTF-8";
-	public static final String URL_CNBETA = "http://cnbeta.com";
-	public static final String URL_CNBETA_IMAGE = "http://static.cnbetacdn.com/topics/";
 	
 	private ActionBar actionBar;
 	
@@ -173,30 +166,7 @@ public class NewsListActivity extends Activity {
  				String textRepresentation) {
  			if( (view instanceof ImageView) & (data instanceof String) ) {
  				final ImageView iv = (ImageView) view;
- 				final String picId = (String)data;   				
- 				Bitmap bm = DAO.loadPic(getApplicationContext(), picId);	//load from local storage
-				if(bm != null)					
-					iv.setImageBitmap(bm);
-				else {
-					iv.setImageResource(R.drawable.icon);	// set to default icon
-    				Thread t = new Thread(){
-    					public void run(){			
-		    				URL url;	// load from network
-		    		        try {
-		    		            url = new URL(URL_CNBETA_IMAGE+picId);
-		    		            URLConnection conn = url.openConnection();
-		    		            conn.connect();
-		    		            InputStream is = conn.getInputStream();
-		    		            final Bitmap bm2 = BitmapFactory.decodeStream(is);
-		    		            iv.post(new Runnable(){public void run(){ iv.setImageBitmap(bm2);}});
-		    		            DAO.storePic(getApplicationContext(), picId, bm2);	// store it
-		    		        } catch (Exception e) {
-		    		            e.printStackTrace();
-		    		        }	
-    					}
-    				};
-    				t.start();
-				}
+ 				ImageManager.getInstance().SetImageView(iv, (String)data);
  				return true;
  			} 
  			/*else if (view.getId() == R.id.text1) {
