@@ -9,8 +9,8 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -24,7 +24,6 @@ import android.widget.ImageView;
  */
 public class ImageManager {
 
-    private static final int CACHE_SIZE = 100;
     private static final String PREFIX = "IMG_";
 
     private static ImageManager instance;
@@ -39,7 +38,7 @@ public class ImageManager {
         return instance;
     }
     private ImageManager() {
-        cache = new HashMap<String, Bitmap>();
+        cache = new WeakHashMap<String, Bitmap>();
     }
 
     /*
@@ -97,9 +96,6 @@ public class ImageManager {
     }
 
     private void addImageToCache(String picId, Bitmap bm) {
-        if (cache.size() > CACHE_SIZE) {
-            cache.clear();
-        }
         cache.put(picId, bm);
     }
 
