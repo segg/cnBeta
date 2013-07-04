@@ -1,6 +1,9 @@
 # gedit backup files
 *~
 
+# crash report
+*.log
+
 # Java class files
 *.class
 

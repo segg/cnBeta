@@ -3,15 +3,11 @@
 
 package gg.cnbeta.activity;
 
-import gg.cnbeta.data.Const;
 import gg.cnbeta.data.DAO;
 import gg.cnbeta.data.ImageManager;
 import gg.cnbeta.data.News;
 import gg.cnbeta.data.NewsParser;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,8 +15,6 @@ import java.util.Map;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
