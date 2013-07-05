@@ -21,6 +21,7 @@ public class FeedServlet extends HttpServlet {
     String id = req.getParameter("id");
     String crawl = req.getParameter("crawl");
     String firstArticleId = req.getParameter("firstArticleId");
+    String l = req.getParameter("l");
     String deleteId = req.getParameter("deleteId");
 
     if (deleteId != null) {
@@ -32,6 +33,13 @@ public class FeedServlet extends HttpServlet {
     } else if (id != null) {
       resp.setContentType("text/html");
       resp.getWriter().println(DAO.escape(DAO.getNewsContent(id)));
+    } else if (l != null) {
+        NewsList nl = DAO.getNewsList(l);
+        if (nl == null) {
+            log.warning("Failed to get news list");
+            return;
+        }
+        resp.getWriter().println(DAO.escape(nl.newsList));
     } else {
       NewsList nl = DAO.getNewsList();
       if (nl == null) {

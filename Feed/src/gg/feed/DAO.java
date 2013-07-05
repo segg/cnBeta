@@ -21,6 +21,7 @@ public class DAO {
 
   public static final String BASE_URL = "http://www.cnbeta.com";
   public static final String NEWS_LIST_ID = "NEWS_LIST_ID";
+  public static final int DEFAULT_SIZE = 60;
   
   private static final Logger log = Logger.getLogger(FeedServlet.class
       .getName());
@@ -57,6 +58,16 @@ public class DAO {
     return ofy.find(NewsList.class, NEWS_LIST_ID);
   }
   
+  public static NewsList getNewsList(String id) {
+      Objectify ofy = ObjectifyService.begin();
+      NewsList list = ofy.find(NewsList.class, id);
+      if (list != null) {
+        return list;
+      }
+      updateNewsList(id);
+      return ofy.find(NewsList.class, id);
+    }
+  
   public static String getNewsContent(String id) {
     Objectify ofy = ObjectifyService.begin();
     News news = ofy.find(News.class, id);
@@ -67,10 +78,27 @@ public class DAO {
     return news == null ? "" : news.getContent();
   }
 
+  public static void updateNewsList(String id) {
+      log.info("update news list for id " + id);
+      Objectify ofy = ObjectifyService.begin();
+      Query<News> newss = ofy.query(News.class).filter("id <= ", id).order("-id").limit(DEFAULT_SIZE);
+      StringBuffer sb = new StringBuffer();
+      String firstArticleId = "0";
+      for (News news : newss) {
+        if (firstArticleId.equals("0")) {
+          firstArticleId = news.getId();
+        }
+        sb.append(news.toString());
+        sb.append("<<>>");
+      } 
+      NewsList nl = new NewsList(id, firstArticleId, sb.toString());
+      ofy.put(nl);
+  }
+  
   public static void updateNewsList() {
     log.info("update news list");
     Objectify ofy = ObjectifyService.begin();
-    Query<News> newss = ofy.query(News.class).order("-time").limit(60);
+    Query<News> newss = ofy.query(News.class).order("-id").limit(DEFAULT_SIZE);
     StringBuffer sb = new StringBuffer();
     String firstArticleId = "0";
     for (News news : newss) {

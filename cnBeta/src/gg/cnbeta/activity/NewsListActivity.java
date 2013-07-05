@@ -3,23 +3,18 @@
 
 package gg.cnbeta.activity;
 
-import gg.cnbeta.data.DAO;
 import gg.cnbeta.data.ImageManager;
 import gg.cnbeta.data.News;
 import gg.cnbeta.data.NewsListManager;
-import gg.cnbeta.data.NewsListParser;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,8 +25,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
-import android.widget.SimpleAdapter.ViewBinder;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,8 +51,9 @@ public class NewsListActivity extends Activity {
         listView = (ListView)this.findViewById(R.id.list);
         list = new ArrayList<News>();
         mAdapter = new NewsListAdapter(getApplicationContext(), 0, list);
-        listView.setAdapter(mAdapter);
+        // Footer view must be set before adapter
         addFooter(listView);
+        listView.setAdapter(mAdapter);
        
         /* ActionBar*/
         actionBar.setTitle("cnBeta - 资讯列表");
@@ -105,14 +99,13 @@ public class NewsListActivity extends Activity {
     */
     private void addFooter(ListView listView) {
         mMoreButton = new Button(getApplicationContext());
-        mMoreButton.setText("点击加载更多新闻");
+        mMoreButton.setText("点击加载更多资讯");
         mMoreButton.setTextColor(getResources().getColor((R.color.listitem_title)));
         mMoreButton.setBackgroundColor(Color.WHITE);
         mMoreButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "加载", Toast.LENGTH_LONG).show();
-                updateListView();
+                addMoreToNewsList();
             }
             
         });
@@ -173,6 +166,7 @@ public class NewsListActivity extends Activity {
     	    public void run() {			
     	        // Try to fetch the latest news list and update local cache
     	        String tmpRawNewsList = NewsListManager.getInstance().updateNewsListForLatest(getApplicationContext());        		
+    	        //List<News> moreList = NewsListManager.getInstance().getNewsList(list.get(list.size() - 1).getId(), getApplicationContext());
     	        if(tmpRawNewsList == null){	// Update failure due to network problem		
     	            listView.post(new Runnable() {
     	                public void run(){
@@ -197,6 +191,50 @@ public class NewsListActivity extends Activity {
     	    }        
     	}.start();
     }
+    
+    /*
+     * Must run in UI thread.
+     */
+    private void addMoreToNewsList() {
+        //final  ProgressDialog dialog = ProgressDialog.show(NewsListActivity.this, "资讯列表", 
+        //        "加载中，请稍候...", true, true);
+        actionBar.setProgressBarVisibility(View.VISIBLE);
+        mMoreButton.setText("加载中...");
+        mMoreButton.setClickable(false);
+        new Thread() {
+            public void run() {         
+                // Try to fetch the latest news list and update local cache          
+                final List<News> moreList = NewsListManager.getInstance().getNewsList(list.get(list.size() - 1).getId(), getApplicationContext());
+                if(moreList == null){ // Update failure due to network problem        
+                    listView.post(new Runnable() {
+                        public void run(){
+                            Toast.makeText(getApplicationContext(), "网络失败！", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } else if(moreList.size() > 0) {
+                    listView.post(new Runnable() {
+                        public void run() {     
+                            list.addAll(moreList);
+                            mMoreButton.setText("点击加载更多资讯");
+                            mMoreButton.setClickable(true);
+                            if (list.size() >= NewsListManager.MAX_NEWS_LIST_SIZE) {
+                                mMoreButton.setText("~~ 到底啦 ~~");
+                                mMoreButton.setClickable(false);
+                            }
+                            Log.d("append more to listview!!");
+                        }
+                    });     
+                }
+                listView.post(new Runnable() {
+                    public void run() {
+                        //dialog.cancel();
+                        actionBar.setProgressBarVisibility(View.GONE);
+                    }
+                });
+
+            }        
+        }.start();
+    }
 
     /*
      * Must run in UI thread.
@@ -206,9 +244,11 @@ public class NewsListActivity extends Activity {
         if (tl.size() > 0) {
             list.clear();
             list.addAll(tl);
+            mMoreButton.setText("点击加载更多资讯");
+            mMoreButton.setClickable(true);
         }
 
-        Log.d("GG", "listview refreshed!!");
+        Log.d("listview refreshed!!");
     }
 
 }    
