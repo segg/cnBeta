@@ -99,7 +99,8 @@ public class NewsListActivity extends Activity {
     */
     private void addFooter(ListView listView) {
         mMoreButton = new Button(getApplicationContext());
-        mMoreButton.setText("点击加载更多资讯");
+        mMoreButton.setText("加载中...");
+        mMoreButton.setClickable(false);
         mMoreButton.setTextColor(getResources().getColor((R.color.listitem_title)));
         mMoreButton.setBackgroundColor(Color.WHITE);
         mMoreButton.setOnClickListener(new OnClickListener() {
@@ -202,7 +203,16 @@ public class NewsListActivity extends Activity {
         mMoreButton.setText("加载中...");
         mMoreButton.setClickable(false);
         new Thread() {
-            public void run() {         
+            public void run() {
+                if (list.isEmpty()) {
+                    listView.post(new Runnable() {
+                        public void run() {
+                            //dialog.cancel();
+                            updateNewsList();
+                        }
+                    });
+                    return;
+                }
                 // Try to fetch the latest news list and update local cache          
                 final List<News> moreList = NewsListManager.getInstance().getNewsList(list.get(list.size() - 1).getId(), getApplicationContext());
                 if(moreList == null){ // Update failure due to network problem        
@@ -214,13 +224,7 @@ public class NewsListActivity extends Activity {
                 } else if(moreList.size() > 0) {
                     listView.post(new Runnable() {
                         public void run() {     
-                            list.addAll(moreList);
-                            mMoreButton.setText("点击加载更多资讯");
-                            mMoreButton.setClickable(true);
-                            if (list.size() >= NewsListManager.MAX_NEWS_LIST_SIZE) {
-                                mMoreButton.setText("~~ 到底啦 ~~");
-                                mMoreButton.setClickable(false);
-                            }
+                            list.addAll(moreList); 
                             Log.d("append more to listview!!");
                         }
                     });     
@@ -229,6 +233,12 @@ public class NewsListActivity extends Activity {
                     public void run() {
                         //dialog.cancel();
                         actionBar.setProgressBarVisibility(View.GONE);
+                        mMoreButton.setText("点击加载更多资讯");
+                        mMoreButton.setClickable(true);
+                        if (list.size() >= NewsListManager.MAX_NEWS_LIST_SIZE) {
+                            mMoreButton.setText("~~ 到底啦 ~~");
+                            mMoreButton.setClickable(false);
+                        }
                     }
                 });
 
