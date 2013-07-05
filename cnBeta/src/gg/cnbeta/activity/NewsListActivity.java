@@ -6,7 +6,7 @@ package gg.cnbeta.activity;
 import gg.cnbeta.data.DAO;
 import gg.cnbeta.data.ImageManager;
 import gg.cnbeta.data.News;
-import gg.cnbeta.data.NewsParser;
+import gg.cnbeta.data.NewsListParser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,10 +103,11 @@ public class NewsListActivity extends Activity {
     		        	}
     		        });
         		}
-        		else if(tmpRawNewsList.length() > 0)	// There is update, update the list view
-        			rawNewsList = tmpRawNewsList;
-        			updateListView();
-        		
+        		else if(tmpRawNewsList.length() > 0) {
+        		    // There is update, update the list view
+        		    rawNewsList = tmpRawNewsList;
+                    updateListView();
+        		}	
         		listView.post(new Runnable() {
 			        	public void run() {
 			        		//dialog.cancel();
@@ -121,10 +122,8 @@ public class NewsListActivity extends Activity {
     
     // parse rawNewsList, create new adapter, and put it in listview
     private void updateListView() {
-    	NewsParser np = new NewsParser();
 		if(rawNewsList != null) {
-			np.parse(rawNewsList);
-			list = np.getNewsList();
+			list =NewsListParser.parse(rawNewsList);
 			adapter = new SimpleAdapter( 
 	        		NewsListActivity.this, 
 	        		getMapList(list),
