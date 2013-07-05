@@ -42,7 +42,7 @@ public class News
 		return sb.toString();
 	}
 	
-	public static News createNews(String s) {
+	public static News fromString(String s) {
 		String [] tokens = s.split(DELIMITER_FIELD);
 		if(tokens.length != 7)
 			return null;

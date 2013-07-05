@@ -5,7 +5,7 @@ import java.util.List;
 
 
 public class NewsListParser {
-    private static final String DELIMITER_FIELD = "<>";
+
     private static final String DELIMITER_LINE = "<<>>";
 		
 	public static List<News> parse(String raw) {
@@ -15,7 +15,7 @@ public class NewsListParser {
 	    List<News> list = new ArrayList<News>();
 	    String [] tokens = raw.split(DELIMITER_LINE);
 	    for(String s : tokens) {
-	        News n = parseNews(s);
+	        News n = News.fromString(s);
 	        if(n != null) {
 	            list.add(n);
 	        }
@@ -23,12 +23,12 @@ public class NewsListParser {
 	    return list;
 	}
 	
-	private static News parseNews(String s) {
-        String [] tokens = s.split(DELIMITER_FIELD);
-        if(tokens.length != 7) {
-            return null;
-        }
-        return new News(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4], tokens[5], tokens[6]);
-    }
-    
+	public static String build(List<News> list) {
+	    StringBuffer sb = new StringBuffer();
+	    for (News n : list) {
+	        sb.append(n.toString());
+	        sb.append(DELIMITER_LINE);
+	    }
+	    return sb.toString();
+	}
 }

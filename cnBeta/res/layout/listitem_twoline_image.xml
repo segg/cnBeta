@@ -5,7 +5,7 @@
   android:layout_height="fill_parent"
   android:padding="2dp">
      <ImageView 
-    	android:id="@+id/imageView" 
+    	android:id="@+id/icon" 
     	android:layout_height="60dp" 
     	android:layout_width="60dp"
     	android:padding="6dp">
@@ -15,7 +15,7 @@
     	android:layout_height="wrap_content" 
     	android:layout_width="fill_parent"
     	android:orientation="vertical">
-	     <TextView android:id="@+id/text1"
+	     <TextView android:id="@+id/title"
 	         android:textSize="14sp"
 	         android:textStyle="bold"
 	         android:layout_width="fill_parent"
@@ -23,7 +23,7 @@
 	         android:lines="1"
 	         android:textColor="@color/listitem_title"/>
 	
-	     <TextView android:id="@+id/text2"
+	     <TextView android:id="@+id/brief"
 	         android:textSize="10sp"
 	         android:layout_width="fill_parent"
 	         android:layout_height="wrap_content"

@@ -1,114 +1,18 @@
 package gg.cnbeta.data;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import android.content.Context;
+
 
 public class DAO {
 	
-	public static final String FILENAME_NEWS_LIST = "newslist.txt";
 	public static final String FILENAME_READ = "read.txt";
 
 	
 	public static String convertHtmlToText(String s) {
 		return s.replace("&nbsp;", " ").replace("&quot;", "\"").replace("&amp;", "&").replace("&middot;", "·");		
-	}
-	
-	// Save rawNewsList
-	public static void storeNewsList(Context context, String rawNewsList) {
-		PrintWriter pw;
-		try {
-			pw = new PrintWriter(new FileWriter(new File(context.getCacheDir(), FILENAME_NEWS_LIST)));
-			pw.println(rawNewsList);
-			pw.flush();
-			pw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	// Load rawNewsList from local cache
-	// Return null if the file does not exist
-	public static String loadRawNewsList(Context context) {
-		File f = new File(context.getCacheDir(), FILENAME_NEWS_LIST);
-		if(f.exists()) {
-			StringBuffer sb = new StringBuffer();
-			try {
-				BufferedReader br = new BufferedReader(new FileReader(f));
-				String line = null;
-				while((line = br.readLine()) != null)
-					sb.append(line);
-				return sb.toString();
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return sb.toString();
-		}
-		return null;
-	}
-	
-	// First try GAE
-	// Then try cnbeta.com
-	public static String fetchRawNewsList(Context context)
-	{	
-		String firstArticleId = "";
-		File f = new File(context.getCacheDir(), FILENAME_NEWS_LIST);
-		if(f.exists())
-			 firstArticleId = getFirstArticleId(f);
-		String newsList = fetchRawNewsListFromUrl(Const.URL_GAE_NEWS_LIST, firstArticleId);
-		if(newsList == null)
-			newsList = fetchRawNewsListFromUrl(Const.URL_PROXY_NEWS_LIST, firstArticleId);
-		// update local cache
-		if(newsList != null && newsList.length() > 0)
-			storeNewsList(context, newsList);	
-		return newsList;
-		
-	}
-	
-	// Check with server using firstArticleId
-	// Return news list if any update
-	// Return "" if no change
-	// Return null if any network problem
-	private static String fetchRawNewsListFromUrl(String url, String firstArticleId)
-	{
-		String html = null;
-		html = NetworkUtil.fetchHtml(url + firstArticleId, null);		
-		if(html == null)
-			return null;	// Network problem
-		if(html.equals(firstArticleId))
-			return "";	
-		return html;
-	}
-	
-	// Use first article id to check with GAE if any change to news list
-	private static String getFirstArticleId(File f)
-	{
-		BufferedReader br = null;
-		try {
-			br = new BufferedReader(new FileReader(f));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		char [] buf = new char[20];
-		try {
-			br.read(buf);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		String s = new String(buf);
-		return s.split("<>")[0];
 	}
 	
 	// First try GAE

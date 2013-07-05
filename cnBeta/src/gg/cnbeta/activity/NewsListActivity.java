@@ -6,6 +6,7 @@ package gg.cnbeta.activity;
 import gg.cnbeta.data.DAO;
 import gg.cnbeta.data.ImageManager;
 import gg.cnbeta.data.News;
+import gg.cnbeta.data.NewsListManager;
 import gg.cnbeta.data.NewsListParser;
 
 import java.util.ArrayList;
@@ -14,15 +15,24 @@ import java.util.List;
 import java.util.Map;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.SimpleAdapter.ViewBinder;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.markupartist.android.widget.ActionBar;
@@ -32,11 +42,12 @@ public class NewsListActivity extends Activity {
 	
 	private ActionBar actionBar;
 	
-	private List<News> list;
 	private ListView listView;
-	private SimpleAdapter adapter;
 	
-	private String rawNewsList;
+	private Button mMoreButton;
+	
+	private List<News> list;
+	private ArrayAdapter<News> mAdapter;
 	
     /** Called when the activity is first created. */
     @Override
@@ -45,6 +56,10 @@ public class NewsListActivity extends Activity {
         setContentView(R.layout.newslist);
         actionBar = (ActionBar)this.findViewById(R.id.actionbar);
         listView = (ListView)this.findViewById(R.id.list);
+        list = new ArrayList<News>();
+        mAdapter = new NewsListAdapter(getApplicationContext(), 0, list);
+        listView.setAdapter(mAdapter);
+        addFooter(listView);
        
         /* ActionBar*/
         actionBar.setTitle("cnBeta - 资讯列表");
@@ -68,100 +83,155 @@ public class NewsListActivity extends Activity {
         });
         
         // Restore if previous state exists
+        /*
         if(savedInstanceState != null && savedInstanceState.containsKey("rawNewsList")) {
         	rawNewsList = savedInstanceState.getString("rawNewsList");
         	updateListView();
     		return;
         }
- 
-        // try to load from local cache if exist
-		rawNewsList = DAO.loadRawNewsList(getApplicationContext());
+ */
+        NewsListManager.getInstance().loadNewsListFromFile(getApplicationContext());
 		updateListView();
 		
 		// Do a quick update from network
 		updateNewsList();
     }
-    
+   /* 
     public void onSaveInstanceState (Bundle outState) {
     	if(rawNewsList != null) {
     		outState.putString("rawNewsList", rawNewsList);
     	}
     }
+    */
+    private void addFooter(ListView listView) {
+        mMoreButton = new Button(getApplicationContext());
+        mMoreButton.setText("点击加载更多新闻");
+        mMoreButton.setTextColor(getResources().getColor((R.color.listitem_title)));
+        mMoreButton.setBackgroundColor(Color.WHITE);
+        mMoreButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "加载", Toast.LENGTH_LONG).show();
+                updateListView();
+            }
+            
+        });
+        listView.addFooterView(mMoreButton);
+    }
     
+    static class ViewHolder {
+        TextView title;
+        TextView brief;
+        ImageView icon;
+    }
+    
+    class NewsListAdapter extends ArrayAdapter<News> {
+
+        private Context mContext;
+        private List<News> mObjects;
+
+        public NewsListAdapter(Context context, int textViewResourceId, List<News> objects) {
+            super(context, textViewResourceId, objects);
+            mContext = context;
+            mObjects = objects;
+        }
+        
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View rowView = null;
+            ViewHolder views = null;
+            if (convertView == null) {
+                LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                rowView = inflater.inflate(R.layout.listitem_twoline_image, parent, false);
+                views = new ViewHolder();
+                views.title = (TextView) rowView.findViewById(R.id.title);
+                views.brief = (TextView) rowView.findViewById(R.id.brief);
+                views.icon = (ImageView) rowView.findViewById(R.id.icon);
+                rowView.setTag(views);
+            } else {
+                rowView = convertView;
+                views = (ViewHolder) convertView.getTag();
+            }
+           
+            News news = mObjects.get(position);
+            views.title.setText(news.getTitle());
+            views.brief.setText(news.getTime() + " " + news.getBrief());
+            ImageManager.getInstance().SetImageView(views.icon, news.getPicId());
+            return rowView;
+        }
+        
+    }
+    
+    /*
+     * Must run in UI thread.
+     */
     private void updateNewsList() {
     	//final  ProgressDialog dialog = ProgressDialog.show(NewsListActivity.this, "资讯列表", 
         //        "加载中，请稍候...", true, true);
     	actionBar.setProgressBarVisibility(View.VISIBLE);
-    	Thread t = new Thread() {
-        	public void run() {			
-        		// Try to fetch the latest news list and update local cache
-        		String tmpRawNewsList = DAO.fetchRawNewsList(getApplicationContext());        		
-        		if(tmpRawNewsList == null){	// Update failure due to network problem		
-        			listView.post(new Runnable() {
-    		        	public void run(){
-    		        		Toast.makeText(getApplicationContext(), "网络失败！", Toast.LENGTH_LONG).show();
-    		        	}
-    		        });
-        		}
-        		else if(tmpRawNewsList.length() > 0) {
-        		    // There is update, update the list view
-        		    rawNewsList = tmpRawNewsList;
-                    updateListView();
-        		}	
-        		listView.post(new Runnable() {
-			        	public void run() {
-			        		//dialog.cancel();
-			        		actionBar.setProgressBarVisibility(View.GONE);
-			        	}
-			       });
-        		
-        	}        
-        };
-        t.start();
+    	new Thread() {
+    	    public void run() {			
+    	        // Try to fetch the latest news list and update local cache
+    	        String tmpRawNewsList = NewsListManager.getInstance().updateNewsListForLatest(getApplicationContext());        		
+    	        if(tmpRawNewsList == null){	// Update failure due to network problem		
+    	            listView.post(new Runnable() {
+    	                public void run(){
+    	                    Toast.makeText(getApplicationContext(), "网络失败！", Toast.LENGTH_LONG).show();
+    	                }
+    	            });
+    	        } else if(tmpRawNewsList.length() > 0) {
+    	            listView.post(new Runnable() {
+    	                public void run() {
+    	                    //dialog.cancel();
+    	                    updateListView();
+    	                }
+    	            });	    
+    	        }
+    	        listView.post(new Runnable() {
+    	            public void run() {
+    	                //dialog.cancel();
+    	                actionBar.setProgressBarVisibility(View.GONE);
+    	            }
+    	        });
+
+    	    }        
+    	}.start();
     }
-    
-    // parse rawNewsList, create new adapter, and put it in listview
+
+    /*
+     * Must run in UI thread.
+     */
     private void updateListView() {
-		if(rawNewsList != null) {
-			list =NewsListParser.parse(rawNewsList);
-			adapter = new SimpleAdapter( 
-	        		NewsListActivity.this, 
-	        		getMapList(list),
-	        		R.layout.listitem_twoline_image,
-	        		new String[] { "title","brief","image_uri" },
-	        		new int[] {R.id.text1, R.id.text2, R.id.imageView } );
-			adapter.setViewBinder(new MyViewBinder());
+        List<News> tl = NewsListManager.getInstance().getLatestNewsList();
+        if (tl.size() > 0) {
+            list.clear();
+            list.addAll(tl);
+        }
+
+        Log.d("GG", "listview refreshed!!");
+    }
+
+}    
+			/*
+			mAdapter = new NewsListAdapter(getApplicationContext(), 0, list);
+	        		
 	        listView.post(new Runnable() {
 	        	public void run() {
-	        		listView.setAdapter(adapter);	
+	        	 // save index and top position
+	        	    int index = listView.getFirstVisiblePosition();
+	        	    View v = listView.getChildAt(0);
+	        	    int top = (v == null) ? 0 : v.getTop();
+
+	        	    listView.setAdapter(mAdapter);
+
+	        	    // restore
+	        	    listView.setSelectionFromTop(index, top);
+	        		
 	        	}
 	        });
-		}
-    }
+	        */
+
     
-    // generate a map for the listview based on the list of news instances
-    private List<Map<String, Object>> getMapList(List<News> list) {
-    	List<Map<String, Object>> ret = new ArrayList<Map<String, Object>>();
-    	for(News news : list) {
-    		Map<String, Object> map = new HashMap<String, Object>();
-    		map.put("title", news.getTitle());
-    		map.put("brief", news.getTime()+" "+news.getBrief());
-    		map.put("image_uri", news.getPicId());
-    		ret.add(map);
-    	}
-    	return ret;
-    }   
-    
-    /* Customized ViewBinder to help fetch topic picture and store in local cache*/
-    private class MyViewBinder implements ViewBinder {
-     	@Override
- 		public boolean setViewValue(View view, Object data,
- 				String textRepresentation) {
- 			if( (view instanceof ImageView) & (data instanceof String) ) {
- 				final ImageView iv = (ImageView) view;
- 				ImageManager.getInstance().SetImageView(iv, (String)data);
- 				return true;
- 			} 
  			/*else if (view.getId() == R.id.text1) {
  				final TextView tv = (TextView) view;
  				final String s = (String) data;
@@ -180,10 +250,7 @@ public class NewsListActivity extends Activity {
  				return true;
  			}
  			*/
- 			return false;
- 		}	
-    }
-    
+ 			
     /*
     // Create an intent for starting itself
     public static Intent createIntent(Context context) {
@@ -192,4 +259,3 @@ public class NewsListActivity extends Activity {
         return i;
     }
     */
-}
