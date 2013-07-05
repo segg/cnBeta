@@ -124,12 +124,39 @@ public class ImageManager {
 
         @Override
         public void run() {
-            if (loadFromFile() || loadFromUrl()) {
-                mImageManager.handleTaskDone(this);
-            }
+           InputStream is = openFileStream();
+           if (is == null) {
+               is = openUrlStream();
+           }
+           if (is == null) {
+               return;
+           }
+           mBitmap = BitmapFactory.decodeStream(is);
+           try {
+               is.close();
+           } catch (IOException e) {
+               // Ignore
+           }
+           if (mBitmap != null) {
+               mImageManager.handleTaskDone(this);
+           }
         }
         
-        private boolean loadFromUrl() {
+        private InputStream openFileStream() {
+            InputStream is = null;
+            ImageView imageView = getImageView();
+            if (imageView == null) {
+                return null;
+            }
+            try {
+                is = imageView.getContext().openFileInput(getImageFileName(mImageId));
+            } catch (FileNotFoundException e) {
+                return null;
+            }
+            return is;
+        }
+
+        private InputStream openUrlStream() {
             InputStream is = null;
             try {
                 URL url = new URL(Const.URL_CNBETA_IMAGE + mImageId);
@@ -138,42 +165,19 @@ public class ImageManager {
                 is = conn.getInputStream();
             } catch (MalformedURLException e) {
                 e.printStackTrace();
-                return false;
+                return null;
             } catch (IOException e) {
                 e.printStackTrace();
-                return false;
+                return null;
             }
+            return is;
+        }
 
-            mBitmap = BitmapFactory.decodeStream(is);
-            try {
-                is.close();
-            } catch (IOException e) {
-                // Ignore
-            }
-            return mBitmap != null;
-        }
-        
-        private boolean loadFromFile() {
-            InputStream is = null;
-            ImageView imageView = getImageView();
-            if (imageView == null) {
-                return false;
-            }
-            try {
-                is = imageView.getContext().openFileInput(getImageFileName(mImageId));
-            } catch (FileNotFoundException e) {
-                return false;
-            }
-            mBitmap = BitmapFactory.decodeStream(is);
-            try {
-                is.close();
-            } catch (IOException e) {
-                // Ignore
-            }
-            return mBitmap != null;
-        }
     }
     
+    /*
+     * Called by LoadImageTask to notify ImageManager that the task is complete.
+     */
     private void handleTaskDone(LoadImageTask task) {
         Message message = mHandler.obtainMessage(0, task);
         message.sendToTarget();
