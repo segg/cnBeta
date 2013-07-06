@@ -8,6 +8,6 @@
     
     <color name="listitem_title">#0099CC</color>
      <color name="listitem_brief">#595454</color>
-    <color name="listitem_title_read">#6DCAEC</color>
-    <color name="listitem_brief_read">#CCCCCC</color>
+    <color name="listitem_title_read">#33B5E5</color>
+    <color name="listitem_brief_read">#888888</color>
 </resources> 

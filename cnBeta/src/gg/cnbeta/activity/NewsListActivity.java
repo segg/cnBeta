@@ -3,6 +3,7 @@
 
 package gg.cnbeta.activity;
 
+import gg.cnbeta.data.DAO;
 import gg.cnbeta.data.ImageManager;
 import gg.cnbeta.data.News;
 import gg.cnbeta.data.NewsListManager;
@@ -70,9 +71,10 @@ public class NewsListActivity extends Activity {
 					long id) {
 				//Toast.makeText(getApplicationContext(), ""+list.get(position).getId(), Toast.LENGTH_SHORT).show();
 				Intent intent = new Intent(NewsListActivity.this, NewsActivity.class);
-				intent.putExtra("id", list.get(position).getId());
-				//DAO.markRead(NewsListActivity.this.getApplicationContext(), list.get(position).getId());
+				intent.putExtra("id", list.get(position).getId());		
 				startActivity(intent);
+                DAO.markRead(getApplicationContext(), list.get(position).getId());
+                mAdapter.notifyDataSetChanged();
 			}   	
         });
         
@@ -150,6 +152,14 @@ public class NewsListActivity extends Activity {
             views.title.setText(news.getTitle());
             views.brief.setText(news.getTime() + " " + news.getBrief());
             ImageManager.getInstance().SetImageView(views.icon, news.getPicId());
+            
+            if (DAO.checkRead(getApplicationContext(), news.getId())) {
+                views.title.setTextColor(NewsListActivity.this.getResources().getColor(R.color.listitem_title_read));
+                views.brief.setTextColor(NewsListActivity.this.getResources().getColor(R.color.listitem_brief_read));
+            } else {
+                views.title.setTextColor(NewsListActivity.this.getResources().getColor(R.color.listitem_title));
+                views.brief.setTextColor(NewsListActivity.this.getResources().getColor(R.color.listitem_brief));
+            }
             return rowView;
         }
         

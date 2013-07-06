@@ -1,11 +1,13 @@
 package gg.cnbeta.activity;
 
+import gg.cnbeta.data.Const;
+import gg.cnbeta.data.DAO;
+import gg.cnbeta.data.NetworkUtil;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import gg.cnbeta.data.Const;
-import gg.cnbeta.data.NetworkUtil;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
@@ -92,14 +94,15 @@ public class NewsActivity extends Activity {
 		        	String id = extras.getString("id");
 		        	// Fetch news content from GAE or cnBeta.com
 		        	content = fetchNewsContent(id);
-		        	if(content != null)
+		        	if(content != null) {
 		        	    runOnUiThread(new Runnable(){public void run(){
 		        			webView.loadDataWithBaseURL(Const.URL_CNBETA, content, "text/html", Const.ENCODING_DEFAULT, null);
 		        		}});
-		        	else
+		        	} else {
 		        	    runOnUiThread(new Runnable(){public void run(){
 		        			Toast.makeText(getApplicationContext(), "网络失败！", Toast.LENGTH_LONG).show();
 		        		}});
+		        	}
 		        }
 		        //dialog.cancel();
 		        runOnUiThread(new Runnable(){

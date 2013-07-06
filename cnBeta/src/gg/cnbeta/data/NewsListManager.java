@@ -5,9 +5,9 @@ import gg.cnbeta.activity.Log;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -172,7 +172,7 @@ public class NewsListManager {
         }
         PrintWriter pw;
         try {
-            pw = new PrintWriter(new FileWriter(new File(context.getCacheDir(), FILENAME_NEWS_LIST)));
+            pw = new PrintWriter(new PrintWriter(context.openFileOutput(FILENAME_NEWS_LIST, 0)));
             String toPrint = NewsListParser.build(list);
             pw.println(toPrint);
             pw.flush();
@@ -188,10 +188,9 @@ public class NewsListManager {
             return;
         }
         mLoaded = true;
-        File f = new File(context.getCacheDir(), FILENAME_NEWS_LIST);
         String line = null;
         try {
-            BufferedReader br = new BufferedReader(new FileReader(f));
+            BufferedReader br = new BufferedReader(new InputStreamReader(context.openFileInput(FILENAME_NEWS_LIST)));
             line = br.readLine(); 
         } catch (FileNotFoundException e) {
             return;
