@@ -88,16 +88,16 @@ public class NewsActivity extends Activity {
 		        	// Fetch news content from GAE or cnBeta.com
 		        	content = DAO.fetchNewsContent(id);
 		        	if(content != null)
-		        		webView.post(new Runnable(){public void run(){
+		        	    runOnUiThread(new Runnable(){public void run(){
 		        			webView.loadDataWithBaseURL(Const.URL_CNBETA, content, "text/html", Const.ENCODING_DEFAULT, null);
 		        		}});
 		        	else
-		        		webView.post(new Runnable(){public void run(){
+		        	    runOnUiThread(new Runnable(){public void run(){
 		        			Toast.makeText(getApplicationContext(), "网络失败！", Toast.LENGTH_LONG).show();
 		        		}});
 		        }
 		        //dialog.cancel();
-		        webView.post(new Runnable(){
+		        runOnUiThread(new Runnable(){
 		        	public void run() {
 		        		//dialog.cancel();
 		        		actionBar.setProgressBarVisibility(View.GONE);

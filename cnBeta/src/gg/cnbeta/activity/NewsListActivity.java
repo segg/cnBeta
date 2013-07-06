@@ -6,6 +6,7 @@ package gg.cnbeta.activity;
 import gg.cnbeta.data.ImageManager;
 import gg.cnbeta.data.News;
 import gg.cnbeta.data.NewsListManager;
+import gg.cnbeta.data.NewsListParser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,26 +78,26 @@ public class NewsListActivity extends Activity {
         });
         
         // Restore if previous state exists
-        /*
+
         if(savedInstanceState != null && savedInstanceState.containsKey("rawNewsList")) {
-        	rawNewsList = savedInstanceState.getString("rawNewsList");
-        	updateListView();
+        	String rawNewsList = savedInstanceState.getString("rawNewsList");
+        	List<News> tl = NewsListParser.parse(rawNewsList);
+        	updateListView(tl, false);
     		return;
         }
- */
+
         NewsListManager.getInstance().loadNewsListFromFile(getApplicationContext());
-		updateListView();
+		updateListView(NewsListManager.getInstance().getLatestNewsList(), true);
 		
 		// Do a quick update from network
 		updateNewsList();
     }
-   /* 
+
     public void onSaveInstanceState (Bundle outState) {
-    	if(rawNewsList != null) {
-    		outState.putString("rawNewsList", rawNewsList);
-    	}
+        super.onSaveInstanceState(outState);
+        outState.putString("rawNewsList", NewsListParser.build(list));
     }
-    */
+
     private void addFooter(ListView listView) {
         mMoreButton = new Button(getApplicationContext());
         mMoreButton.setText("加载中...");
@@ -169,20 +170,20 @@ public class NewsListActivity extends Activity {
     	        String tmpRawNewsList = NewsListManager.getInstance().updateNewsListForLatest(getApplicationContext());        		
     	        //List<News> moreList = NewsListManager.getInstance().getNewsList(list.get(list.size() - 1).getId(), getApplicationContext());
     	        if(tmpRawNewsList == null){	// Update failure due to network problem		
-    	            listView.post(new Runnable() {
+    	            runOnUiThread(new Runnable() {
     	                public void run(){
     	                    Toast.makeText(getApplicationContext(), "网络失败！", Toast.LENGTH_LONG).show();
     	                }
     	            });
     	        } else if(tmpRawNewsList.length() > 0) {
-    	            listView.post(new Runnable() {
+    	            runOnUiThread(new Runnable() {
     	                public void run() {
     	                    //dialog.cancel();
-    	                    updateListView();
+    	                    updateListView(NewsListManager.getInstance().getLatestNewsList(), true);
     	                }
     	            });	    
     	        }
-    	        listView.post(new Runnable() {
+    	        runOnUiThread(new Runnable() {
     	            public void run() {
     	                //dialog.cancel();
     	                actionBar.setProgressBarVisibility(View.GONE);
@@ -205,7 +206,7 @@ public class NewsListActivity extends Activity {
         new Thread() {
             public void run() {
                 if (list.isEmpty()) {
-                    listView.post(new Runnable() {
+                    runOnUiThread(new Runnable() {
                         public void run() {
                             //dialog.cancel();
                             updateNewsList();
@@ -216,20 +217,21 @@ public class NewsListActivity extends Activity {
                 // Try to fetch the latest news list and update local cache          
                 final List<News> moreList = NewsListManager.getInstance().getNewsList(list.get(list.size() - 1).getId(), getApplicationContext());
                 if(moreList == null){ // Update failure due to network problem        
-                    listView.post(new Runnable() {
+                    runOnUiThread(new Runnable() {
                         public void run(){
                             Toast.makeText(getApplicationContext(), "网络失败！", Toast.LENGTH_LONG).show();
                         }
                     });
                 } else if(moreList.size() > 0) {
-                    listView.post(new Runnable() {
+                    runOnUiThread(new Runnable() {
                         public void run() {     
                             list.addAll(moreList); 
+                            mAdapter.notifyDataSetChanged();
                             Log.d("append more to listview!!");
                         }
                     });     
                 }
-                listView.post(new Runnable() {
+                runOnUiThread(new Runnable() {
                     public void run() {
                         //dialog.cancel();
                         actionBar.setProgressBarVisibility(View.GONE);
@@ -249,11 +251,14 @@ public class NewsListActivity extends Activity {
     /*
      * Must run in UI thread.
      */
-    private void updateListView() {
-        List<News> tl = NewsListManager.getInstance().getLatestNewsList();
-        if (tl.size() > 0) {
+    private void updateListView(List<News> tl, boolean scrollToTop) {
+        if (tl != null && tl.size() > 0) {
             list.clear();
             list.addAll(tl);
+            mAdapter.notifyDataSetChanged();
+            if (scrollToTop) {
+                listView.setSelectionAfterHeaderView();
+            }
             mMoreButton.setText("点击加载更多资讯");
             mMoreButton.setClickable(true);
         }
