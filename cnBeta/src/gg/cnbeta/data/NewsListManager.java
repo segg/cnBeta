@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -210,7 +209,7 @@ public class NewsListManager {
     private String fetchRawNewsList()
     {   
         String firstArticleId = mNewss.size() > 0 ? mNewss.firstKey() : "0";
-        String newsList = fetchRawNewsListFromUrl(Const.URL_GAE_NEWS_LIST, firstArticleId);
+        String newsList = Const.CHINA ? null : fetchRawNewsListFromUrl(Const.URL_GAE_NEWS_LIST, firstArticleId);
         if(newsList == null) {
             newsList = fetchRawNewsListFromUrl(Const.URL_PROXY_NEWS_LIST, firstArticleId);
         }
@@ -222,7 +221,7 @@ public class NewsListManager {
     // Then try cnbeta.com
     private String fetchRawNewsListForMore(String id)
     {   
-        String newsList = fetchRawNewsListFromUrl(Const.URL_GAE_NEWS_LIST_MORE, id);
+        String newsList = Const.CHINA ? null : fetchRawNewsListFromUrl(Const.URL_GAE_NEWS_LIST_MORE, id);
         if(newsList == null) {
             newsList = fetchRawNewsListFromUrl(Const.URL_PROXY_NEWS_LIST_MORE, id);
         }

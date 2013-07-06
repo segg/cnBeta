@@ -6,7 +6,6 @@ package gg.cnbeta.activity;
 import gg.cnbeta.data.ImageManager;
 import gg.cnbeta.data.News;
 import gg.cnbeta.data.NewsListManager;
-import gg.cnbeta.data.NewsListParser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,12 +77,11 @@ public class NewsListActivity extends Activity {
         });
         
         // Restore if previous state exists
-
-        if(savedInstanceState != null && savedInstanceState.containsKey("rawNewsList")) {
-        	String rawNewsList = savedInstanceState.getString("rawNewsList");
-        	List<News> tl = NewsListParser.parse(rawNewsList);
-        	updateListView(tl, false);
-    		return;
+        @SuppressWarnings("unchecked")
+        List<News> savedList = (List<News>) getLastNonConfigurationInstance();
+        if (savedList != null) {
+            updateListView(savedList, false);
+            return;
         }
 
         NewsListManager.getInstance().loadNewsListFromFile(getApplicationContext());
@@ -93,9 +91,9 @@ public class NewsListActivity extends Activity {
 		updateNewsList();
     }
 
-    public void onSaveInstanceState (Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString("rawNewsList", NewsListParser.build(list));
+    @Override
+    public Object onRetainNonConfigurationInstance() {
+        return list;
     }
 
     private void addFooter(ListView listView) {

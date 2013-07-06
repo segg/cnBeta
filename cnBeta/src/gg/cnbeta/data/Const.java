@@ -2,6 +2,7 @@ package gg.cnbeta.data;
 
 public interface Const {
     public static final boolean DEBUG = false;
+    public static final boolean CHINA = false;
 
     public static final String URL_APPSPOT = "http://gg--uu.appspot.com";
     public static final String URL_PROXY = "http://50.87.186.28/cgi-bin/cnbeta_newslist2.sh";
