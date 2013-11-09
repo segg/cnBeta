@@ -162,7 +162,7 @@ public class DAO {
       Element titleBar = doc.getElementsByClass("title_bar").get(0);
       Element date = titleBar.getElementsByClass("date").get(0);
 
-      Element outterContent = doc.getElementsByClass("content").get(0);
+      Element outterContent = doc.getElementsByClass("article_content").get(0);
       Element intro = outterContent.getElementsByClass("introduction").get(0);
       Element content = intro.nextElementSibling();
 
